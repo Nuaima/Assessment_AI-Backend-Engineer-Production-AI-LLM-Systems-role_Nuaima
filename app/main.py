@@ -3,6 +3,7 @@ import os
 import tempfile
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi.responses import FileResponse
 
 from app.audio import normalize_audio, validate_audio_file
 from app.schemas import TranscriptionResponse
@@ -10,6 +11,7 @@ from app.transcriber import Transcriber
 
 MAX_UPLOAD_MB = int(os.getenv("MAX_UPLOAD_MB", "100"))
 CHUNK_SIZE = 1024 * 1024
+FRONTEND_PATH = Path(__file__).parent / "static" / "index.html"
 
 app = FastAPI(
     title="Audio Transcription Service",
@@ -25,6 +27,11 @@ def get_transcriber() -> Transcriber:
     if _transcriber is None:
         _transcriber = Transcriber()
     return _transcriber
+
+
+@app.get("/", include_in_schema=False)
+def frontend() -> FileResponse:
+    return FileResponse(FRONTEND_PATH)
 
 
 @app.get("/health")
